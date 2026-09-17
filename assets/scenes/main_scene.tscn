@@ -1,0 +1,278 @@
+[gd_scene format=4 uid="uid://dnuhmcxp8lbxb"]
+
+[ext_resource type="Texture2D" uid="uid://b51nwi771fors" path="res://assets/art/png/plat_1.png" id="1_6sgls"]
+[ext_resource type="Texture2D" uid="uid://s8i0fcwxthvy" path="res://assets/art/png/player_anim.png" id="1_vo808"]
+[ext_resource type="Texture2D" uid="uid://vj4iw6wdq5j8" path="res://assets/art/png/plat_2.png" id="2_u44wh"]
+[ext_resource type="Texture2D" uid="uid://c4q263483wnbj" path="res://assets/art/png/decor_3.png" id="4_vo808"]
+[ext_resource type="Texture2D" uid="uid://biwwe3lrefjs2" path="res://assets/art/png/decor_2.png" id="5_4v045"]
+[ext_resource type="Texture2D" uid="uid://dmfn6wtbrfplf" path="res://assets/art/png/decor_1.png" id="6_0ft0v"]
+[ext_resource type="Texture2D" uid="uid://dihs7ihdkde0x" path="res://assets/art/png/light.png" id="7_4v045"]
+
+[sub_resource type="GDScript" id="GDScript_vo808"]
+script/source = "extends CharacterBody2D
+
+const MAXSPEED = 300.0
+const ACCELERATION = 670
+const JUMP_VELOCITY = -350.0
+const COYOTETIME = 0.13
+
+var GRAVITY = 981
+var currentCoyote = 0
+var inCoyoteTime = false
+var intro_finished = false
+
+@onready var sprite = $AnimatedSprite2D
+
+func _ready():
+	add_to_group(\"player\")
+	
+	sprite.play(\"intro\")
+	sprite.animation_finished.connect(_on_intro_finished)
+
+func _on_intro_finished():
+	intro_finished = true
+
+func _physics_process(delta: float) -> void:
+	if not intro_finished:
+		return
+		
+	if is_on_floor():
+		currentCoyote = 0
+	
+	# Lógica del Coyote
+	if not is_on_floor():
+		if currentCoyote < COYOTETIME:
+			currentCoyote += delta
+			inCoyoteTime = true
+		else:
+			inCoyoteTime = false
+
+	# Salto
+	if Input.is_action_just_pressed(\"jump\") and (is_on_floor() or inCoyoteTime):
+		velocity.y = JUMP_VELOCITY
+		inCoyoteTime = false
+		
+	if not is_on_floor():
+		velocity.y += GRAVITY * delta
+
+	var direction := Input.get_axis(\"left\", \"right\")
+	if direction:
+		velocity.x = move_toward(velocity.x, MAXSPEED*direction, ACCELERATION * delta)
+		if velocity.x < 100:
+			$AnimatedSprite2D.flip_h = direction < 0
+	else:
+		velocity.x = move_toward(velocity.x, 0, ACCELERATION * delta * 10)
+		
+	# Caída al vacío (Respawn)
+	if position.y > 700:
+		position = Vector2(-110, 0)
+		velocity = Vector2.ZERO
+
+	move_and_slide()
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_vo808"]
+size = Vector2(29, 63)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4v045"]
+atlas = ExtResource("1_vo808")
+region = Rect2(0, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_0ft0v"]
+atlas = ExtResource("1_vo808")
+region = Rect2(64, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_702vk"]
+atlas = ExtResource("1_vo808")
+region = Rect2(128, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yecn6"]
+atlas = ExtResource("1_vo808")
+region = Rect2(192, 0, 64, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_supws"]
+atlas = ExtResource("1_vo808")
+region = Rect2(256, 0, 64, 64)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_51pxq"]
+animations = [{
+"frames": [{
+"duration": 20.0,
+"texture": SubResource("AtlasTexture_4v045")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_0ft0v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_702vk")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yecn6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_supws")
+}],
+"loop": false,
+"name": &"intro",
+"speed": 10.0
+}]
+
+[sub_resource type="GDScript" id="GDScript_4v045"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_u44wh"]
+texture = ExtResource("1_6sgls")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+2:0/0 = 0
+2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+3:0/0 = 0
+3:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_eqalh"]
+texture = ExtResource("2_u44wh")
+texture_region_size = Vector2i(32, 32)
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+2:0/0 = 0
+2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+3:0/0 = 0
+3:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+4:0/0 = 0
+4:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+5:0/0 = 0
+5:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+6:0/0 = 0
+6:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+7:0/0 = 0
+7:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+8:0/0 = 0
+8:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+9:0/0 = 0
+9:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+10:0/0 = 0
+10:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+11:0/0 = 0
+11:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+12:0/0 = 0
+12:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+13:0/0 = 0
+13:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+0:0/0 = 0
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_702vk"]
+texture = ExtResource("4_vo808")
+texture_region_size = Vector2i(32, 32)
+1:0/0 = 0
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_yecn6"]
+texture = ExtResource("5_4v045")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_supws"]
+texture = ExtResource("6_0ft0v")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+1:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_vo808"]
+texture = ExtResource("6_0ft0v")
+texture_region_size = Vector2i(32, 32)
+0:0/0 = 0
+0:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:0/0 = 0
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+0:1/0 = 0
+0:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:1/0 = 0
+1:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+0:2/0 = 0
+0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+1:2/0 = 0
+1:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(-16, -16, 16, -16, 16, 16, -16, 16)
+
+[sub_resource type="TileSet" id="TileSet_eqalh"]
+tile_size = Vector2i(32, 32)
+physics_layer_0/collision_layer = 1
+sources/3 = SubResource("TileSetAtlasSource_u44wh")
+sources/4 = SubResource("TileSetAtlasSource_eqalh")
+sources/5 = SubResource("TileSetAtlasSource_702vk")
+sources/6 = SubResource("TileSetAtlasSource_yecn6")
+sources/7 = SubResource("TileSetAtlasSource_supws")
+sources/8 = SubResource("TileSetAtlasSource_vo808")
+
+[sub_resource type="GDScript" id="GDScript_0ft0v"]
+script/source = "extends Area2D
+
+@export var player: Node2D
+
+# Subí un poco la velocidad, ya que 0.0001 dividido entre una distancia (ej. 100) 
+# daría un número tan pequeño que no verías la rotación. Ajusta este número a tu gusto.
+const WSPEED = 50000.0 
+
+func _process(delta: float) -> void:
+	# Verificamos que el nodo player esté asignado para evitar errores
+	if player:
+		var distance = global_position.distance_to(player.global_position)
+		rotation_degrees += delta * (1 / (distance / WSPEED))
+	
+
+func _on_body_entered(body: Node2D) -> void:
+	print(\"Detecté algo: \", body.name) # Nos dirá si está detectando cualquier cuerpo
+	if body.is_in_group(\"player\"):
+		print(\"¡Es el jugador! Saliendo...\")
+		get_tree().quit()
+"
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_702vk"]
+radius = 18.439089
+
+[node name="MainScene" type="Node2D" unique_id=1267983824]
+
+[node name="Player" type="CharacterBody2D" parent="." unique_id=2139983360 groups=["player"]]
+position = Vector2(-110, 0)
+script = SubResource("GDScript_vo808")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Player" unique_id=2088295944]
+z_index = 2155
+position = Vector2(1.5, 0.5)
+shape = SubResource("RectangleShape2D_vo808")
+
+[node name="Camera2D" type="Camera2D" parent="Player" unique_id=1766631033]
+position_smoothing_enabled = true
+position_smoothing_speed = 6.0
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="Player" unique_id=973927489]
+sprite_frames = SubResource("SpriteFrames_51pxq")
+animation = &"intro"
+frame = 4
+frame_progress = 1.0
+script = SubResource("GDScript_4v045")
+
+[node name="TileMapLayer" type="TileMapLayer" parent="." unique_id=1358464134]
+z_index = 10
+position = Vector2(-15, 0)
+tile_map_data = PackedByteArray("AAD//wEABAAHAAAAAAAAAAEABAAIAAAAAAABAAEABAAJAAAAAAACAAEABAAKAAAAAAADAAEABAALAAAAAAAEAAEABAAMAAAAAAAFAAEABAANAAAAAAD+/wEABAAGAAAAAAD9/wEABAAFAAAAAAD8/wEABAAEAAAAAAD7/wEABAADAAAAAAD6/wEABAACAAAAAAD5/wEABAABAAAAAAAGAAAAAwAAAAAAAAAHAAAAAwABAAAAAAAIAAAAAwACAAAAAAAJAAAAAwADAAAAAAAOAAAABAABAAAAAAAPAAAABAACAAAAAAAQAAAABAADAAAAAAARAAAABAAEAAAAAAASAAAABAAFAAAAAAATAAAABAAGAAAAAAAVAAEABAAHAAAAAAAWAAEABAAIAAAAAAAXAAEABAAJAAAAAAAYAAEABAAKAAAAAAAZAAEABAALAAAAAAAaAAEABAAMAAAAAAAbAAEABAANAAAAAAAaAAUABAABAAAAAAAbAAUABAACAAAAAAAcAAUABAADAAAAAAAdAAUABAAEAAAAAAAeAAUABAAFAAAAAAAfAAUABAAGAAAAAAAgAAUABAAHAAAAAAAhAAUABAAIAAAAAAAiAAUABAAJAAAAAAAjAAUABAAKAAAAAAAkAAUABAALAAAAAAAlAAUABAAMAAAAAAAmAAUABAANAAAAAAAoAAMAAwAAAAAAAAApAAMAAwABAAAAAAAqAAMAAwACAAAAAAArAAMAAwADAAAAAAAkAAEABAAGAAAAAAAlAAEABAAHAAAAAAAbAP7/AwAAAAAAAAAcAP7/AwABAAAAAAAdAP7/AwACAAAAAAAeAP7/AwADAAAAAAAfAAEAAwABAAAAAAAeAAEAAwAAAAAAAAAiAPz/BAABAAAAAAAjAPz/BAACAAAAAAAkAPz/BAADAAAAAAAlAPz/BAAEAAAAAAAmAPz/BAAFAAAAAAAnAPz/BAAGAAAAAAAoAPz/BAAHAAAAAAApAPz/BAAIAAAAAAAqAPz/BAAJAAAAAAArAPz/BAAKAAAAAAAsAPz/BAALAAAAAAAtAPz/BAAMAAAAAAAuAPz/BAANAAAAAAAhAAAAAwADAAAAAAAgAAAAAwACAAAAAAAxAPz/BAABAAAAAAAyAPz/BAACAAAAAAAzAPz/BAADAAAAAAA0APz/BAAEAAAAAAA1APz/BAAFAAAAAAA2APz/BAAGAAAAAAA3APz/BAAHAAAAAAA4APz/BAAIAAAAAAA5APz/BAAJAAAAAAA6APz/BAAKAAAAAAA7APz/BAALAAAAAAA8APz/BAAMAAAAAAA9APz/BAANAAAAAAD6/wAABQAAAAAAAAD7/wAABQABAAAAAAAjAAQABQAAAAAAAAAkAAQABQABAAAAAAAlAPv/BQAAAAAAAAAmAPv/BQABAAAAAAD+/wAABgAAAAAAAAACAP7/BwAAAAAAAAACAP//BwAAAAEAAAACAAAABwAAAAIAAAADAP7/BwABAAAAAAADAP//BwABAAEAAAADAAAABwABAAIAAAAaAAIABwAAAAAAAAAaAAMABwAAAAEAAAAaAAQABwAAAAIAAAAbAAIABwABAAAAAAAbAAMABwABAAEAAAAbAAQABwABAAIAAAAqAPn/BwAAAAAAAAAqAPr/BwAAAAEAAAAqAPv/BwAAAAIAAAArAPn/BwABAAAAAAArAPr/BwABAAEAAAArAPv/BwABAAIAAAAxAPn/CAAAAAAAAAAxAPr/CAAAAAEAAAAxAPv/CAAAAAIAAAAyAPn/CAABAAAAAAAyAPr/CAABAAEAAAAyAPv/CAABAAIAAAAvABEABAAHAAAAAAAwABEABAAIAAAAAAAxABEABAAJAAAAAAAyABEABAAKAAAAAAAzABEABAALAAAAAAA0ABEABAAMAAAAAAA1ABEABAANAAAAAAA3ABAABAABAAAAAAA4ABAABAACAAAAAAA5ABAABAADAAAAAAA6ABAABAAEAAAAAAA7ABAABAAFAAAAAAA8ABAABAAGAAAAAAA9ABAABAAHAAAAAAA+ABAABAAIAAAAAAA/ABAABAAJAAAAAABAABAABAAKAAAAAABBABAABAALAAAAAABCABAABAAMAAAAAABDABAABAANAAAAAABHAA8AAwAAAAAAAABIAA8AAwABAAAAAABJAA8AAwACAAAAAABKAA8AAwADAAAAAABLAA4AAwAAAAAAAABMAA4AAwABAAAAAABNAA4AAwACAAAAAABOAA4AAwADAAAAAABTAA0ABAABAAAAAABUAA0ABAACAAAAAABVAA0ABAADAAAAAABWAA0ABAAEAAAAAABXAA0ABAAFAAAAAABYAA0ABAAGAAAAAABZAA0ABAAHAAAAAABaAA0ABAAIAAAAAABbAA0ABAAJAAAAAABcAA0ABAAKAAAAAABdAA0ABAALAAAAAABeAA0ABAAMAAAAAABfAA0ABAANAAAAAABTAAoABwAAAAAAAABTAAsABwAAAAEAAABTAAwABwAAAAIAAABUAAoABwABAAAAAABUAAsABwABAAEAAABUAAwABwABAAIAAABZAAwABgAAAAAAAABdAAwABQAAAAAAAABeAAwABQABAAAAAABuAAYABAAJAAAAAABvAAYABAAKAAAAAABwAAUABAALAAAAAABxAAUABAAMAAAAAAByAAUABAANAAAAAABpAAoABAADAAAAAABqAAoABAAEAAAAAABrAAoABAAFAAAAAABqAAMAAwAAAAAAAABrAAMAAwABAAAAAABsAAMAAwACAAAAAABtAAMAAwADAAAAAABcAAIABAABAAAAAABdAAIABAACAAAAAABeAAIABAADAAAAAABfAAIABAAEAAAAAABgAAIABAAFAAAAAABhAAIABAAGAAAAAABiAAIABAAHAAAAAABjAAIABAAIAAAAAABkAAIABAAJAAAAAABlAAIABAAKAAAAAABmAAIABAALAAAAAABnAAIABAAMAAAAAABoAAIABAANAAAAAABNAAEABAABAAAAAABOAAEABAACAAAAAABPAAEABAADAAAAAABQAAEABAAEAAAAAABRAAEABAAFAAAAAABSAAEABAAGAAAAAABTAAEABAAHAAAAAABUAAEABAAIAAAAAABVAAEABAAJAAAAAABWAAEABAAKAAAAAABXAAEABAALAAAAAABYAAEABAAMAAAAAABZAAEABAANAAAAAABKAAAABAAEAAAAAABIAAMABAAEAAAAAABJAAIABAAEAAAAAABHAPz/BAAEAAAAAABEAAAABAAEAAAAAABDAP//BAAEAAAAAABCAP7/BAAEAAAAAAA/APz/BAAEAAAAAAA7APn/BwAAAAAAAAA7APr/BwAAAAEAAAA7APv/BwAAAAIAAAA8APn/BwABAAAAAAA8APr/BwABAAEAAAA8APv/BwABAAIAAAA0APv/BgAAAAAAAAA5APv/BQAAAAAAAAA6APv/BQABAAAAAABhAAsAAwAAAAAAAABiAAsAAwABAAAAAABjAAsAAwACAAAAAABkAAsAAwADAAAAAABmAAkABAABAAAAAABnAAkABAACAAAAAABoAAkABAADAAAAAABsAAgABAAHAAAAAABtAAgABAAIAAAAAABFAAIABAAEAAAAAAAuABEABAAGAAAAAAAuABAABQAAAAAAAAAvABAABQABAAAAAAAzABAABQAAAAAAAAA0ABAABQABAAAAAABAAA8ABQAAAAAAAABBAA8ABQABAAAAAABmAAEABQAAAAAAAABnAAEABQABAAAAAABPAAAABQAAAAAAAABQAAAABQABAAAAAABWAP7/BwAAAAAAAABWAP//BwAAAAEAAABWAAAABwAAAAIAAABXAP7/BwABAAAAAABXAP//BwABAAEAAABXAAAABwABAAIAAABfAP//BwAAAAAAAABfAAAABwAAAAEAAABfAAEABwAAAAIAAABgAP//BwABAAAAAABgAAAABwABAAEAAABgAAEABwABAAIAAAA4AA0ABwAAAAAAAAA4AA4ABwAAAAEAAAA4AA8ABwAAAAIAAAA5AA0ABwABAAAAAAA5AA4ABwABAAEAAAA5AA8ABwABAAIAAAA6AA0ABwAAAAAAAAA6AA4ABwAAAAEAAAA6AA8ABwAAAAIAAAA7AA0ABwABAAAAAAA7AA4ABwABAAEAAAA7AA8ABwABAAIAAABhAP//BwAAAAAAAABhAAAABwAAAAEAAABhAAEABwAAAAIAAABiAP//BwABAAAAAABiAAAABwABAAEAAABiAAEABwABAAIAAABTAAAABgAAAAAAAAAxABAABgAAAAAAAAA=")
+tile_set = SubResource("TileSet_eqalh")
+
+[node name="Area2D" type="Area2D" parent="." unique_id=1850777430 node_paths=PackedStringArray("player")]
+position = Vector2(1665, -188)
+script = SubResource("GDScript_0ft0v")
+player = NodePath("../Player")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D" unique_id=1701890769]
+shape = SubResource("CircleShape2D_702vk")
+
+[node name="Sprite2D" type="Sprite2D" parent="Area2D" unique_id=88187180]
+texture = ExtResource("7_4v045")
+
+[connection signal="body_entered" from="Area2D" to="Area2D" method="_on_body_entered"]
